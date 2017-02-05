@@ -1,0 +1,13 @@
+{
+  "name": "veronabot",
+  "version": "1.0.0",
+  "description": "A Markov-chain bot trained on Romeo and Juliet",
+  "main": "shakespeare.js",
+  "author": "djsrv",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.4.7",
+    "jsdom": "^9.9.1",
+    "redis": "^2.6.5"
+  }
+}
