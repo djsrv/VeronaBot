@@ -20,18 +20,21 @@ class Bot {
 
   async sentence (firstWord) {
     let sentence = this.capitalize(firstWord)
-    let word = firstWord
-    do {
-      word = await this.markov.nextWord(word)
+    let lastWord = firstWord
+    let word = null
+    while (true) {
+      word = await this.markov.nextWord(lastWord)
       if (!chars.punctuation.includes(word)) sentence += ' '
       if (this.shouldCapitalize(word)) {
         sentence += this.capitalize(word)
       } else {
         sentence += word
       }
-    } while (!chars.terminators.includes(word))
+      if (chars.terminators.includes(word)) break
+      lastWord = word
+    }
     if (sentence.length <= 10) { // Respond to self if sentence is too short
-      sentence += ' ' + await this.respondToWord(word)
+      sentence += ' ' + await this.respondToWord(lastWord)
     }
     if (sentence.length <= 140) { // Try again if sentence is too long
       return sentence
