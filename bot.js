@@ -15,7 +15,7 @@ class Bot {
   }
 
   async init (dialogue, db) {
-    this.markov.init(dialogue, db)
+    await this.markov.init(dialogue, db)
   }
 
   async sentence (firstWord) {

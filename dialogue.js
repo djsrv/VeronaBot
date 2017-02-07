@@ -26,7 +26,7 @@ function parseScript (document) {
 }
 
 function parseSpeech (speech) {
-  let speaker = speech.children[0].textContent
+  let speaker = speech.children[0].textContent.toLowerCase()
 
   let quote = speech.nextSibling.nextSibling
   let lines = quote.querySelectorAll('a')

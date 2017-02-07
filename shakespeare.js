@@ -7,26 +7,46 @@ const getDialogue = require('./dialogue')
 const MarkovChain = require('./markov')
 const Bot = require('./bot')
 
-let bots = {}
-let nextBot = 'romeo'
+const botNames = [
+  'Sampson',
+  'Gregory',
+  'Benvolio',
+  'Tybalt',
+  'Capulet',
+  'Lady Capulet',
+  'Montague',
+  'Lady Montague',
+  'Prince',
+  'Romeo',
+  'Paris',
+  'Nurse',
+  'Juliet',
+  'Mercutio',
+  'Friar Laurence',
+  'Balthasar',
+  'Apothecary',
+  'Friar John'
+]
+
+let bots = []
+let nextBot = 0
 let lastSentence = null
 
 async function main () {
   console.log('Parsing play script...')
   let dialogue = await getDialogue()
+  console.log(Object.keys(dialogue))
 
   console.log('Creating response chain...')
   let responses = await createResponsesChain(dialogue.all)
 
-  console.log('Initializing Romeo bot...')
-  let romeo = new Bot('Romeo', responses)
-  await romeo.init(dialogue.ROMEO, 1)
-  bots.romeo = romeo
-
-  console.log('Initializing Juliet bot...')
-  let juliet = new Bot('Juliet', responses)
-  await juliet.init(dialogue.JULIET, 2)
-  bots.juliet = juliet
+  for (let i = 0; i < botNames.length; i++) {
+    let botName = botNames[i]
+    console.log(`Initializing ${botName} bot...`)
+    let bot = new Bot(botName, responses)
+    await bot.init(dialogue[botName.toLowerCase()], i + 1)
+    bots.push(bot)
+  }
 
   readline.emitKeypressEvents(process.stdin)
   process.stdin.setRawMode(true)
@@ -61,7 +81,8 @@ async function speak (str, key) {
   let sentence = lastSentence ? await bot.respondToSentence(lastSentence) : await bot.randomSentence()
   console.log(`${bot.name}: ${sentence}`)
 
-  nextBot = nextBot === 'romeo' ? 'juliet' : 'romeo'
+  nextBot = nextBot + 1
+  if (nextBot === bots.length) nextBot = 0
   lastSentence = sentence
 }
 
