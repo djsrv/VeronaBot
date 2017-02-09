@@ -28,14 +28,15 @@ const botNames = [
   'Friar John'
 ]
 
-let bots = []
-let nextBot = 0
+let bots = {}
+let onStage = []
+
+let linesSinceLastStageDirection = 0
 let lastSentence = null
 
 async function main () {
   console.log('Parsing play script...')
   let dialogue = await getDialogue()
-  console.log(Object.keys(dialogue))
 
   console.log('Creating response chain...')
   let responses = await createResponsesChain(dialogue.all)
@@ -45,14 +46,16 @@ async function main () {
     console.log(`Initializing ${botName} bot...`)
     let bot = new Bot(botName, responses)
     await bot.init(dialogue[botName.toLowerCase()], i + 1)
-    bots.push(bot)
+    bots[botName] = bot
   }
 
   readline.emitKeypressEvents(process.stdin)
   process.stdin.setRawMode(true)
-  process.stdin.on('keypress', speak)
+  process.stdin.on('keypress', nextLine)
 
   console.log('Done! Press any key to continue.')
+
+  enterBots()
 }
 
 async function createResponsesChain (dialogue) {
@@ -74,16 +77,105 @@ async function createResponsesChain (dialogue) {
   return markov
 }
 
-async function speak (str, key) {
+async function nextLine (str, key) {
   if (key.sequence === '\u0003') process.exit()
 
-  let bot = bots[nextBot]
+  if (linesSinceLastStageDirection > 3) {
+    let chance = onStage.length > 1 ? 20 : 5
+    let rand = Math.floor(Math.random() * chance)
+    if (rand === 0) {
+      let success = enterBots()
+      if (!success) exitBots()
+    } else if (rand === 1) {
+      let success = exitBots()
+      if (!success) enterBots()
+    } else {
+      doDialogue()
+    }
+  } else {
+    if (onStage.length > 0) await doDialogue()
+    else enterBots()
+  }
+}
+
+async function doDialogue () {
+  let index = Math.floor(Math.random() * onStage.length)
+  let bot = onStage[index]
   let sentence = lastSentence ? await bot.respondToSentence(lastSentence) : await bot.randomSentence()
   console.log(`${bot.name}: ${sentence}`)
 
-  nextBot = nextBot + 1
-  if (nextBot === bots.length) nextBot = 0
   lastSentence = sentence
+  linesSinceLastStageDirection += 1
+  return true
+}
+
+function enterBots () {
+  let count = Math.floor(Math.random() * 3) + 1
+  let offStage = getOffstageBots()
+  let entering = []
+
+  let i = 0
+  while (i < count && offStage.length > 0 && onStage.length <= 6) {
+    let index = Math.floor(Math.random() * offStage.length)
+    let bot = offStage[index]
+    offStage.splice(index, 1)
+    onStage.push(bot)
+    entering.push(bot.name.toUpperCase())
+    i += 1
+  }
+
+  if (entering.length === 0) {
+    return false
+  } else if (entering.length === 1) {
+    console.log(`Enter ${entering[0]}`)
+  } else if (entering.length === 2) {
+    console.log(`Enter ${entering[0]} and ${entering[1]}`)
+  } else if (entering.length === 3) {
+    console.log(`Enter ${entering[0]}, ${entering[1]}, and ${entering[2]}`)
+  }
+
+  linesSinceLastStageDirection = 0
+  return true
+}
+
+function exitBots () {
+  let count = Math.floor(Math.random() * 3) + 1
+  let exiting = []
+
+  let i = 0
+  while (i < count && onStage.length > 0) {
+    let index = Math.floor(Math.random() * onStage.length)
+    let bot = onStage[index]
+    onStage.splice(index, 1)
+    exiting.push(bot.name.toUpperCase())
+    i += 1
+  }
+
+  if (exiting.length === 0) {
+    return false
+  } else if (exiting.length === 1) {
+    console.log(`Exit ${exiting[0]}`)
+  } else if (exiting.length === 2) {
+    console.log(`Exeunt ${exiting[0]} and ${exiting[1]}`)
+  } else if (exiting.length === 3) {
+    console.log(`Exeunt ${exiting[0]}, ${exiting[1]}, and ${exiting[2]}`)
+  }
+
+  linesSinceLastStageDirection = 0
+  return true
+}
+
+function getOffstageBots () {
+  let result = []
+  for (let botName in bots) {
+    if (bots.hasOwnProperty(botName)) {
+      let bot = bots[botName]
+      if (!onStage.includes(bot)) {
+        result.push(bot)
+      }
+    }
+  }
+  return result
 }
 
 main()
