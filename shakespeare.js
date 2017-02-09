@@ -75,12 +75,13 @@ async function main () {
     }
     linesSinceLastStageDirection = savedState.linesSinceLastStageDirection
     lastSentence = savedState.lastSentence
+    nextLine()
   } else {
     enterBots([bots.Romeo, bots.Juliet])
   }
 
   if (online) {
-    setInterval(nextLine, 1000 * 60 * 15)
+    setInterval(nextLine, 1000 * 60 * 5)
   } else {
     readline.emitKeypressEvents(process.stdin)
     process.stdin.setRawMode(true)
@@ -137,7 +138,7 @@ async function doDialogue () {
   let index = Math.floor(Math.random() * onStage.length)
   let bot = onStage[index]
   let sentence = lastSentence ? await bot.respondToSentence(lastSentence) : await bot.randomSentence()
-  say(`${bot.name}: ${sentence}`)
+  say(`${bot.name.toUpperCase()}: ${sentence}`)
 
   lastSentence = sentence
   linesSinceLastStageDirection += 1
