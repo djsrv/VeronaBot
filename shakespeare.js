@@ -81,7 +81,7 @@ async function main () {
   }
 
   if (online) {
-    setInterval(nextLine, 1000 * 60 * 5)
+    setInterval(nextLine, 1000 * 60 * 60)
   } else {
     readline.emitKeypressEvents(process.stdin)
     process.stdin.setRawMode(true)
