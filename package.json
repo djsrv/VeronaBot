@@ -7,7 +7,9 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.4.7",
+    "dotenv": "^4.0.0",
     "jsdom": "^9.9.1",
-    "redis": "^2.6.5"
+    "redis": "^2.6.5",
+    "twitter": "^1.7.0"
   }
 }

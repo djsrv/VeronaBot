@@ -36,7 +36,7 @@ class Bot {
     if (sentence.length <= 10) { // Respond to self if sentence is too short
       sentence += ' ' + await this.respondToWord(lastWord)
     }
-    if (sentence.length <= 140) { // Try again if sentence is too long
+    if (this.name.length + 2 + sentence.length <= 140) { // Try again if sentence is too long
       return sentence
     } else {
       return await this.sentence(firstWord)
